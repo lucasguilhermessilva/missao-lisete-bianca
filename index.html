@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Missão: Lisete Bianca ❤</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23ff2d78' d='M32 56S6 40 6 22C6 12 14 6 22 6c5 0 8 2 10 6 2-4 5-6 10-6 8 0 16 6 16 16 0 18-26 34-26 34z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<!-- ===== camadas fixas ===== -->
+<canvas id="space-canvas" aria-hidden="true"></canvas>
+<canvas id="rocky-canvas" aria-hidden="true"></canvas>
+<canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+<div id="hud" aria-hidden="true">
+  <div id="trajetoria"><div id="trajetoria-fill"></div><div id="trajetoria-nave"></div></div>
+</div>
+
+<button id="audio-btn" aria-label="Pausar ou tocar a música" hidden>
+  <svg id="icon-on" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a8.5 8.5 0 0 1 0 12"/></svg>
+  <svg id="icon-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/><path d="m16 9 5 5M21 9l-5 5"/></svg>
+</button>
+
+<div id="rocky-bubble" class="bubble" hidden><span id="rocky-bubble-text"></span></div>
+
+<div id="rosa-overlay" aria-hidden="true"></div>
+<div id="flash" aria-hidden="true"></div>
+
+<!-- ===== tela de início / boot ===== -->
+<div id="boot">
+  <div class="boot-inner">
+    <div class="boot-console" id="boot-console" aria-live="polite"></div>
+    <div class="boot-lock" id="boot-lock">
+      <p class="boot-eyebrow">PROJETO HAIL MARY · EDIÇÃO ESPECIAL: NÓS DOIS</p>
+      <h1 class="boot-title">MISSÃO:<br><span>LISETE BIANCA</span> <em class="boot-heart">❤</em></h1>
+      <button id="btn-iniciar" type="button">Iniciar missão 🚀</button>
+      <p class="boot-dica">coloca o som no máximo, tripulante</p>
+    </div>
+  </div>
+</div>
+
+<main id="nave">
+
+  <!-- ===== 1 · abertura ===== -->
+  <section id="abertura" class="secao">
+    <p class="eyebrow reveal">REGISTRO DE BORDO · DO LUCAS PARA A LISETE</p>
+    <h2 class="display reveal-words">a estrela que eu escolhi orbitar</h2>
+    <div class="telemetria reveal">
+      <p class="tele-label">TEMPO DE MISSÃO · ORBITANDO VOCÊ DESDE 05/02/2026</p>
+      <div class="tele-contador" id="contador">
+        <div class="tele-un"><b id="t-dias">0</b><i>dias</i></div>
+        <div class="tele-sep">:</div>
+        <div class="tele-un"><b id="t-horas">00</b><i>horas</i></div>
+        <div class="tele-sep">:</div>
+        <div class="tele-un"><b id="t-min">00</b><i>min</i></div>
+        <div class="tele-sep">:</div>
+        <div class="tele-un"><b id="t-seg">00</b><i>seg</i></div>
+      </div>
+      <p class="tele-nota"><span id="t-frase">…</span> — e a minha gravidade ainda aponta pra você.</p>
+    </div>
+    <div class="scroll-hint reveal" aria-hidden="true"><span></span>desce com calma, é uma viagem longa e bonita</div>
+  </section>
+
+  <!-- ===== 2 · capítulos ===== -->
+  <section id="cap1" class="secao capitulo">
+    <p class="eyebrow reveal">REGISTRO 01 · OS PRIMEIROS DIAS</p>
+    <figure class="foto-frame reveal-foto" style="--ar:709/945">
+      <img src="assets/cap-primeiros-dias.jpg" alt="Lisete concentrada, pintando um livro de colorir dentro do carro" width="709" height="945">
+    </figure>
+    <p class="texto-amor reveal-words">Os primeiros dias: você colorindo um livrinho no meio da noite, eu fingindo que olhava pra outro lugar. Foi aí que eu entendi os Astrophage — chega perto demais de uma estrela e não existe mais caminho que não seja orbitar ela.</p>
+    <p class="nota-amor reveal">um “Oii” em 25/01/2026 virou a melhor coisa da minha vida.</p>
+  </section>
+
+  <section id="cap2" class="secao capitulo">
+    <p class="eyebrow reveal">REGISTRO 02 · O DIA FOFO</p>
+    <figure class="foto-frame reveal-foto" style="--ar:709/945">
+      <img loading="lazy" src="assets/cap-dia-fofo.jpg" alt="Lisete no carro com a gatinha de vestidinho vermelho no colo" width="709" height="945">
+    </figure>
+    <p class="texto-amor reveal-words">Você, a gatinha de vestidinho vermelho e o céu dourado lá fora — três coisas fofas demais dentro do mesmo carro. E eu ali, oficialmente o ser mais sortudo da Via Láctea.</p>
+    <p class="nota-amor reveal">cientificamente comprovado: fofura em dose dupla não tem antídoto.</p>
+  </section>
+
+  <section id="cap3" class="secao capitulo">
+    <p class="eyebrow reveal">REGISTRO 03 · A RECORDAÇÃO</p>
+    <figure class="foto-frame reveal-foto" style="--ar:709/945">
+      <img loading="lazy" src="assets/cap-recordacao.jpg" alt="Coraçõezinhos desenhados de caneta rosa no pulso do Lucas" width="709" height="945">
+    </figure>
+    <p class="texto-amor reveal-words">Você desenhou coraçõezinhos de caneta no meu pulso. Caneta sai com água — eu sei, porque eu demorei o máximo que pude pra lavar. Foi a primeira tatuagem que eu nunca quis apagar.</p>
+    <p class="nota-amor reveal">alguns registros a pele esquece; esse, o coração arquivou pra sempre.</p>
+  </section>
+
+  <section id="cap4" class="secao capitulo">
+    <p class="eyebrow reveal">REGISTRO 04 · O MOMENTO ESPECIAL</p>
+    <figure class="foto-frame reveal-foto" style="--ar:532/945">
+      <img loading="lazy" src="assets/cap-especial.jpg" alt="Tirinha de cabine de fotos com quatro quadros nossos: abraço, beijo e risada" width="532" height="945">
+    </figure>
+    <p class="texto-amor reveal-words">Quatro quadrinhos e a gente inteiro dentro deles. Dizem que o universo é grande demais pra caber em qualquer coisa — mentira. Naquele dia ele coube numa cabine de fotos.</p>
+    <p class="nota-amor reveal">evidência nº 4: a gente fica bem em qualquer galáxia.</p>
+  </section>
+
+  <section id="cap5" class="secao capitulo">
+    <p class="eyebrow reveal">REGISTRO 05 · O VÍDEO ESPECIAL</p>
+    <figure class="foto-frame reveal-foto" style="--ar:533/945">
+      <img loading="lazy" src="assets/cap-video-especial.jpg" alt="Lisete sorrindo tímida, mostrando o anel no dedo, à noite no carro" width="533" height="945">
+    </figure>
+    <p class="texto-amor reveal-words">Um anel no dedo e esse sorriso tímido de quem sabe das coisas. Os astrônomos medem tudo em anos-luz; eu meço em quantas vezes ainda vou te ver sorrir assim. Resultado preliminar: infinitas.</p>
+    <p class="nota-amor reveal">telemetria confirma: meu coração errou as batidas. de novo.</p>
+  </section>
+
+  <!-- ===== 3 · constelação ===== -->
+  <section id="constelacao" class="secao">
+    <p class="eyebrow reveal">MAPA ESTELAR · MEMÓRIAS RECUPERADAS</p>
+    <h2 class="display reveal-words">constelação de nós dois</h2>
+    <p class="nota-amor reveal">cada ponto de luz é um dia que eu não quero esquecer.<br>toca nas estrelas — elas são todas nossas.</p>
+    <div id="campo-estelar">
+      <svg id="constelacao-linhas" aria-hidden="true"></svg>
+    </div>
+  </section>
+
+  <!-- ===== 4 · relatório da missão ===== -->
+  <section id="relatorio" class="secao">
+    <p class="eyebrow reveal">CONSOLE DE BORDO · TELEMETRIA SENTIMENTAL DA NAVE</p>
+    <h2 class="display reveal-words">relatório da missão</h2>
+
+    <div class="painel reveal">
+      <div class="painel-top"><span class="led"></span><span class="led led-rosa"></span><span class="painel-titulo">HAIL MARY · TELEMETRIA DO AMOR · TUDO NOMINAL</span></div>
+
+      <div class="origem">
+        <p class="origem-titulo">// ORIGEM DE TUDO — 25/01/2026, 13:20</p>
+        <div class="chat-replay">
+          <div class="msg dele"><p>Oii</p><time>13:20</time></div>
+        </div>
+        <p class="origem-nota">duas letrinhas e um domingo qualquer. o universo nunca mais foi o mesmo.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat reveal"><b>2 × 1</b><span>dois corações a bordo, batendo numa frequência só. sincronização perfeita desde 05/02/2026.</span></div>
+        <div class="stat reveal"><b>100%</b><span>probabilidade de eu te amar amanhã. o computador recalcula todo dia — dá sempre isso.</span></div>
+        <div class="stat reveal"><b>∞</b><span>estoque de “te amo” disponível no tanque. consumo diário: alto. risco de acabar: zero.</span></div>
+        <div class="stat reveal"><b>11 anos-luz</b><span>distância que eu atravessaria de olhos fechados só pra te ver rir. ida e volta, se precisar.</span></div>
+        <div class="stat reveal"><b>+1 🐈</b><span>tripulante honorária detectada: uma gatinha de vestidinho vermelho. autorização concedida pra sempre.</span></div>
+        <div class="stat reveal"><b>5 bilhões</b><span>de anos que o Sol ainda vai brilhar. pouco, perto do tempo que eu pretendo te amar.</span></div>
+        <div class="stat reveal"><b>0</b><span>vontade de viver num universo sem você. medição repetida três vezes pra confirmar: zero mesmo.</span></div>
+        <div class="stat reveal"><b>1 “Oii”</b><span>foi o que bastou. o maior retorno por mensagem já registrado na história das comunicações.</span></div>
+        <div class="stat reveal"><b>57 bpm</b><span>meu coração em repouso. perto de você: erra as batidas. anomalia conhecida, sem correção prevista.</span></div>
+        <div class="stat reveal"><b>T+∞</b><span>duração prevista da missão. reabastecimento: beijo, abraço e o som da sua risada.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5 · momento rosa ===== -->
+  <section id="rosa">
+    <div class="rosa-sticky">
+      <div class="rosa-conteudo">
+        <p class="rosa-linha" id="rosa-l1">Os Astrophage devoram estrelas.</p>
+        <p class="rosa-linha" id="rosa-l2">Você devorou meu coração inteiro — e ainda pediu sobremesa.</p>
+        <p class="rosa-declaracao" id="rosa-l3">Você é a minha linha de Petrova: a luz rosa que me mostra o caminho de volta pra casa.</p>
+        <p class="rosa-linha rosa-fina" id="rosa-l4">Eu atravessaria 11 anos-luz de olhos fechados só pra te ver rir.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6 · gran finale ===== -->
+  <section id="final" class="secao">
+    <div class="final-inner">
+      <p class="eyebrow reveal">ÚLTIMO REGISTRO · PAZ E AMOR</p>
+      <figure class="foto-frame final-foto reveal-foto" style="--ar:532/945">
+        <img loading="lazy" src="assets/final.jpg" alt="Lisete de óculos escuros fazendo paz e amor com as duas mãos" width="532" height="945">
+      </figure>
+      <div class="carta reveal">
+        <p>Lisete,</p>
+        <p>o Grace atravessou o universo inteiro e descobriu que ninguém se salva sozinho — até ele precisou de um amigo feito de pedra e música. Eu precisei só de um “Oii”.</p>
+        <p>Sorte a minha: a minha melhor amiga também é o amor da minha vida.</p>
+        <p>Enquanto existir estrela pra Astrophage comer, eu vou estar aqui — te amando em todas as frequências, mandando bom dia primeiro só pra garantir, e errando as batidas do coração toda vez que você sorri.</p>
+        <p>Paz e amor, como você faria. Pra sempre, como eu prefiro.</p>
+        <p class="assinatura">— Lucas Guilherme, <em>seu astronauta</em></p>
+      </div>
+      <button id="btn-bump" type="button" class="reveal">soquinho do Rocky&nbsp;&nbsp;🤜🤛</button>
+      <p class="fim reveal" id="fim">missão cumprida? nunca. ela tá só começando. <b id="tmais">T+∞</b></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- lightbox da constelação -->
+<div id="lightbox" hidden>
+  <button id="lightbox-fechar" aria-label="Fechar">✕</button>
+  <figure><img id="lightbox-img" src="" alt="Memória nossa ampliada"><figcaption id="lightbox-cap">registro recuperado da memória da nave</figcaption></figure>
+</div>
+
+<audio id="musica" src="assets/sign-of-the-times.mp3" loop preload="auto"></audio>
+
+<script src="assets/three.min.js"></script>
+<script src="assets/gsap.min.js"></script>
+<script src="assets/ScrollTrigger.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
