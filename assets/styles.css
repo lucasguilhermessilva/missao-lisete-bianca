@@ -176,20 +176,22 @@ main{position:relative;z-index:2}
 .eyebrow::after{content:'  ·'}
 .display{
   font-family:var(--serif);font-weight:500;font-style:italic;
-  font-size:clamp(44px,9.4vw,92px);line-height:1.06;letter-spacing:.01em;
+  font-size:clamp(46px,10vw,100px);line-height:1.04;letter-spacing:.01em;
   max-width:11em;
-  text-shadow:0 0 38px rgba(255,45,120,.25);
+  text-shadow:0 0 50px rgba(255,45,120,.30),0 2px 60px rgba(0,0,0,.4);
 }
 .texto-amor{
   font-family:var(--serif);font-weight:500;
-  font-size:clamp(25px,4.6vw,40px);line-height:1.38;
-  max-width:var(--larg-texto);margin-top:44px;
+  font-size:clamp(26px,4.8vw,44px);line-height:1.36;
+  max-width:var(--larg-texto);margin-top:48px;
   text-wrap:balance;
+  text-shadow:0 2px 40px rgba(0,0,0,.5);
 }
 .nota-amor{
-  font-family:var(--mono);font-size:clamp(12px,1.8vw,13.5px);line-height:1.8;
-  color:var(--astro-soft);opacity:.78;margin-top:26px;letter-spacing:.04em;
-  max-width:30rem;
+  font-family:var(--mono);font-size:clamp(12.5px,1.9vw,14px);line-height:1.8;
+  color:var(--astro-soft);opacity:.85;margin-top:28px;letter-spacing:.04em;
+  max-width:32rem;
+  text-shadow:0 0 16px rgba(255,45,120,.3);
 }
 
 /* abertura */
@@ -205,8 +207,8 @@ main{position:relative;z-index:2}
 .tele-un{display:flex;flex-direction:column;align-items:center;min-width:64px}
 .tele-un b{
   font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;
-  font-size:clamp(30px,6.4vw,46px);line-height:1.1;color:var(--astro-soft);
-  text-shadow:0 0 18px rgba(255,45,120,.55);
+  font-size:clamp(34px,7vw,52px);line-height:1.1;color:var(--astro-soft);
+  text-shadow:0 0 22px rgba(255,45,120,.6),0 0 50px rgba(255,45,120,.2);
 }
 .tele-un i{font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.3em;color:var(--tinta-apagada);margin-top:8px}
 .tele-sep{font-family:var(--mono);font-size:clamp(26px,5.6vw,40px);color:var(--astro-deep);line-height:1.2}
@@ -221,21 +223,26 @@ main{position:relative;z-index:2}
 
 /* capítulos */
 .foto-frame{
-  position:relative;width:min(430px,80vw);aspect-ratio:var(--ar,3/4);
-  border-radius:18px;padding:10px;margin-top:8px;
-  background:linear-gradient(160deg,rgba(255,182,217,.22),rgba(255,45,120,.06) 40%,rgba(76,29,149,.14));
+  position:relative;width:min(500px,88vw);aspect-ratio:var(--ar,3/4);
+  border-radius:22px;padding:0;margin-top:12px;
+  background:linear-gradient(160deg,rgba(255,182,217,.26),rgba(255,45,120,.08) 40%,rgba(76,29,149,.16));
   box-shadow:
-    0 0 0 1px rgba(255,182,217,.22),
-    0 24px 70px rgba(0,0,0,.6),
-    0 0 46px rgba(255,45,120,.18);
-  transform-style:preserve-3d;
+    0 0 0 1px rgba(255,182,217,.28),
+    0 32px 90px rgba(0,0,0,.65),
+    0 0 70px rgba(255,45,120,.22);
+  transform-style:preserve-3d;overflow:hidden;
 }
 .foto-frame::after{
-  content:'';position:absolute;inset:-26px;z-index:-1;border-radius:32px;
-  background:radial-gradient(60% 60% at 50% 50%,rgba(255,45,120,.18),transparent 70%);
-  filter:blur(8px);
+  content:'';position:absolute;inset:-40px;z-index:-1;border-radius:40px;
+  background:radial-gradient(60% 60% at 50% 50%,rgba(255,45,120,.22),transparent 70%);
+  filter:blur(14px);
 }
-.foto-frame img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.foto-frame::before{
+  content:'';position:absolute;inset:0;z-index:1;border-radius:22px;
+  background:linear-gradient(to bottom,transparent 55%,rgba(6,1,13,.55) 100%);
+  pointer-events:none;
+}
+.foto-frame img{width:100%;height:100%;object-fit:cover;border-radius:22px;display:block}
 .capitulo .foto-frame{animation:flutua 7s ease-in-out infinite}
 @keyframes flutua{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-12px) rotate(.5deg)}}
 
@@ -245,9 +252,10 @@ main{position:relative;z-index:2}
 #constelacao-linhas{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 #constelacao-linhas path{fill:none;stroke:rgba(255,182,217,.22);stroke-width:1;stroke-dasharray:3 7}
 .estrela-mem{
-  position:absolute;width:96px;height:96px;border-radius:50%;padding:0;border:1px solid rgba(255,182,217,.45);
+  position:absolute;width:108px;height:108px;border-radius:50%;padding:0;
+  border:1px solid rgba(255,182,217,.5);
   background:transparent;
-  box-shadow:0 0 18px rgba(255,45,120,.35),0 0 50px rgba(255,45,120,.12),0 10px 30px rgba(0,0,0,.5);
+  box-shadow:0 0 24px rgba(255,45,120,.40),0 0 60px rgba(255,45,120,.15),0 12px 36px rgba(0,0,0,.55);
   transform:translate(-50%,-50%);
   animation:flutua-est 9s ease-in-out infinite;
 }
@@ -323,19 +331,66 @@ main{position:relative;z-index:2}
 .msg.flutuante:nth-child(2n){animation-delay:-3s}
 .msg.flutuante:nth-child(3n){animation-delay:-5.5s}
 
+.stat-destaque{
+  margin:8px 22px 0;padding:28px 24px;border-radius:20px;text-align:center;
+  background:linear-gradient(140deg,rgba(255,45,120,.14),rgba(163,16,72,.10));
+  border:1px solid rgba(255,182,217,.30);
+  box-shadow:0 0 60px rgba(255,45,120,.12),inset 0 0 40px rgba(255,45,120,.04);
+}
+.stat-destaque-num{
+  display:block;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;
+  font-size:clamp(52px,10vw,80px);line-height:1;color:var(--astro-soft);
+  text-shadow:0 0 30px rgba(255,45,120,.65),0 0 80px rgba(255,45,120,.25);
+  margin-bottom:12px;letter-spacing:.02em;
+}
+.stat-destaque-label{
+  display:block;font-family:var(--serif);font-style:italic;
+  font-size:clamp(17px,2.8vw,22px);color:var(--tinta-suave);line-height:1.4;
+}
+
 .stats-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:20px 22px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px 22px 16px;
 }
 .stat{
-  border:1px solid rgba(255,182,217,.14);border-radius:16px;padding:18px 16px;
-  background:rgba(255,45,120,.04);
+  border:1px solid rgba(255,182,217,.16);border-radius:18px;padding:20px 18px;
+  background:linear-gradient(145deg,rgba(255,45,120,.06),rgba(255,45,120,.02));
+  transition:border-color .2s;
 }
+.stat:hover,.stat:focus-within{border-color:rgba(255,182,217,.35)}
 .stat b{
   display:block;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;
-  font-size:clamp(21px,3.4vw,28px);color:var(--astro-soft);
-  text-shadow:0 0 16px rgba(255,45,120,.45);margin-bottom:8px;
+  font-size:clamp(22px,3.6vw,30px);color:var(--astro-soft);
+  text-shadow:0 0 20px rgba(255,45,120,.55);margin-bottom:10px;
 }
-.stat span{font-size:13.5px;line-height:1.55;color:var(--tinta-suave)}
+.stat span{font-size:14px;line-height:1.6;color:var(--tinta-suave)}
+
+/* ===== mensagens fofas reais ===== */
+.msgs-fofas{padding:8px 22px 30px}
+.chat-replay-fofas{gap:14px;padding-top:8px}
+.chat-replay-fofas .msg{font-size:16px;padding:14px 18px 26px}
+
+/* ===== vídeo especial ===== */
+.secao-video{text-align:center;padding-bottom:20vh}
+.video-wrap{
+  position:relative;width:min(420px,86vw);min-height:520px;
+  margin:48px auto 32px;border-radius:28px;overflow:hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,182,217,.28),
+    0 0 80px rgba(255,45,120,.40),
+    0 0 160px rgba(255,45,120,.15),
+    0 40px 80px rgba(0,0,0,.6);
+}
+.video-wrap video{display:block;width:100%;height:auto;min-height:520px;object-fit:cover;border-radius:28px}
+.video-wrap::before{
+  content:'';position:absolute;inset:0;border-radius:28px;
+  background:linear-gradient(160deg,rgba(255,45,120,.18) 0%,transparent 40%,rgba(255,45,120,.12) 100%);
+  pointer-events:none;z-index:1
+}
+.video-wrap::after{
+  content:'';position:absolute;inset:-40px;border-radius:40px;
+  background:radial-gradient(60% 60% at 50% 50%,rgba(255,45,120,.25),transparent 70%);
+  filter:blur(20px);z-index:-1
+}
 
 /* ===== momento rosa ===== */
 #rosa{position:relative;height:320svh}
@@ -361,12 +416,16 @@ main{position:relative;z-index:2}
 .final-inner{display:flex;flex-direction:column;align-items:center}
 .final-foto{animation:flutua 8s ease-in-out infinite}
 .carta{
-  margin-top:54px;max-width:min(620px,92vw);text-align:left;
-  font-family:var(--serif);font-size:clamp(21px,3.6vw,27px);line-height:1.55;font-weight:500;
-  background:var(--vidro);border:var(--borda-vidro);border-radius:22px;
-  padding:clamp(26px,5vw,44px);
-  box-shadow:0 24px 80px rgba(0,0,0,.5),inset 0 0 50px rgba(255,45,120,.05);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  margin-top:54px;max-width:min(660px,92vw);text-align:left;
+  font-family:var(--serif);font-size:clamp(22px,3.8vw,29px);line-height:1.58;font-weight:500;
+  background:linear-gradient(160deg,rgba(28,10,48,.82),rgba(14,4,26,.88));
+  border:1px solid rgba(255,182,217,.22);border-radius:26px;
+  padding:clamp(30px,5.5vw,52px);
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.55),
+    0 0 80px rgba(255,45,120,.08),
+    inset 0 0 60px rgba(255,45,120,.04);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
 .carta p+p{margin-top:1em}
 .assinatura{font-style:italic;color:var(--astro-soft);text-align:right}
@@ -390,19 +449,24 @@ main{position:relative;z-index:2}
   .stats-grid{grid-template-columns:1fr}
   .tele-un{min-width:54px}
   .secao{padding:16vh 18px}
-  .foto-frame{width:min(330px,84vw)}
+  .foto-frame{width:min(360px,88vw)}
+  .video-wrap{width:min(380px,90vw);min-height:460px}
+  .video-wrap video{min-height:460px}
+}
+@media (min-width:600px) and (max-width:1099px){
+  .foto-frame{width:min(480px,82vw)}
 }
 @media (min-width:1100px){
   :root{--larg-texto:38rem}
-  .foto-frame{width:min(480px,38vw)}
+  .foto-frame{width:min(520px,40vw)}
   #campo-estelar{height:1700px}
 }
 /* paisagem baixa (tablet deitado): foto e texto lado a lado */
 @media (orientation:landscape) and (max-height:900px) and (min-width:900px){
-  .capitulo{flex-direction:row;flex-wrap:wrap;gap:0 64px;justify-content:center;align-items:center;text-align:left;padding:14vh 6vw}
+  .capitulo{flex-direction:row;flex-wrap:wrap;gap:0 72px;justify-content:center;align-items:center;text-align:left;padding:14vh 6vw}
   .capitulo .eyebrow{width:100%;text-align:center}
-  .capitulo .foto-frame{width:min(330px,30vw)}
-  .capitulo .texto-amor{max-width:30rem;margin-left:0;font-size:clamp(22px,2.6vw,30px)}
+  .capitulo .foto-frame{width:min(360px,32vw)}
+  .capitulo .texto-amor{max-width:32rem;margin-left:0;font-size:clamp(22px,2.6vw,30px)}
   .capitulo .nota-amor{width:100%;max-width:none;text-align:center}
 }
 

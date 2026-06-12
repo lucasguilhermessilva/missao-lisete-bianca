@@ -209,189 +209,178 @@ function montarCoracao() {
 }
 
 /* ============================================================
-   3 · ROCKY — modelo 3D real (Three.js + JSONs decimados dos STLs oficiais)
+   3 · ROCKY — fiel ao filme/pelúcia
+   Corpo: domo de pedra largo e achatado, base plana com saia,
+   5 patas grossas saindo pra fora e dobradas pra baixo,
+   pintinhas verdes emissivas, sem rosto.
    ============================================================ */
 var rocky = null, rockyCena = null, rockyCam = null, rockyGl = null;
-var rockyPartes = { torso: null, pintas: [], ombros: [], patas: [] };
-var rockyAlvo = { x: .5, y: .8, s: 0, rot: 0 };
+var rockyPartes = { carapaca: null, pintas: [], ombros: [], cotos: [], patas: [] };
+var rockyAlvo = { x: .5, y: .8, s: 0 };
 var rockyVivo = false;
-var rockyPendentes = 0; // conta JSONs a carregar
 
 function texturaPedra() {
-  var cv = document.createElement('canvas'); cv.width = cv.height = 256;
-  var cx2 = cv.getContext('2d');
-  cx2.fillStyle = '#9b7d5c'; cx2.fillRect(0, 0, 256, 256);
-  for (var i = 0; i < 320; i++) {
-    cx2.globalAlpha = rand(.02, .08);
-    cx2.fillStyle = Math.random() < .5 ? '#6b4f36' : '#c4a47e';
-    var r = rand(3, 22), x = rand(0, 256), y = rand(0, 256);
-    cx2.beginPath(); cx2.arc(x, y, r, 0, 6.2832); cx2.fill();
+  var cv = document.createElement('canvas'); cv.width = cv.height = 512;
+  var c = cv.getContext('2d');
+  c.fillStyle = '#9e7a4a'; c.fillRect(0,0,512,512);
+  for (var i = 0; i < 700; i++) {
+    c.globalAlpha = rand(.015,.09);
+    c.fillStyle = Math.random()<.35 ? '#5c3a18' : Math.random()<.5 ? '#c8a06a' : '#7a5530';
+    var r = rand(3,28), x = rand(0,512), y = rand(0,512);
+    c.beginPath(); c.arc(x,y,r,0,6.283); c.fill();
   }
-  cx2.globalAlpha = .6; cx2.strokeStyle = '#4e3520'; cx2.lineCap = 'round';
-  for (var c = 0; c < 34; c++) {
-    cx2.lineWidth = rand(.5, 1.6);
-    var x0 = rand(0, 256), y0 = rand(0, 256);
-    cx2.beginPath(); cx2.moveTo(x0, y0);
-    var seg = 2 + Math.floor(Math.random() * 5);
-    for (var s2 = 0; s2 < seg; s2++) { x0 += rand(-32, 32); y0 += rand(-22, 32); cx2.lineTo(x0, y0); }
-    cx2.stroke();
+  c.globalAlpha = .65; c.strokeStyle = '#382010'; c.lineCap='round';
+  for (var j = 0; j < 48; j++) {
+    c.lineWidth = rand(.3,1.8);
+    var x0=rand(0,512), y0=rand(0,512);
+    c.beginPath(); c.moveTo(x0,y0);
+    for (var k=0; k<2+Math.floor(Math.random()*4); k++) { x0+=rand(-38,38); y0+=rand(-28,38); c.lineTo(x0,y0); }
+    c.stroke();
   }
-  cx2.globalAlpha = 1;
-  return new THREE.CanvasTexture(cv);
-}
-
-function buildGeoFromJSON(data) {
-  var geo = new THREE.BufferGeometry();
-  var vArr = new Float32Array(data.v);
-  var iArr = new Uint32Array(data.f);
-  geo.setAttribute('position', new THREE.BufferAttribute(vArr, 3));
-  geo.setIndex(new THREE.BufferAttribute(iArr, 1));
-  geo.computeVertexNormals();
-  return geo;
-}
-
-function carregarJSON(url, cb) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
-  xhr.onload = function () {
-    if (xhr.status === 200 || xhr.status === 0) {
-      try { cb(null, JSON.parse(xhr.responseText)); }
-      catch (e) { cb(e); }
-    } else { cb(new Error('HTTP ' + xhr.status)); }
-  };
-  xhr.onerror = function () { cb(new Error('network')); };
-  xhr.send();
+  c.globalAlpha=1;
+  var t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(2,2);
+  return t;
 }
 
 function montarRocky() {
   var cv = document.getElementById('rocky-canvas');
-  try {
-    rockyGl = new THREE.WebGLRenderer({ canvas: cv, alpha: true, antialias: DPR <= 1.5 });
-  } catch (e) { cv.style.display = 'none'; return; }
-  rockyGl.setPixelRatio(Math.min(DPR, 1.75));
-  rockyGl.setSize(VW, VH);
-  rockyCena = new THREE.Scene();
-  rockyCam = new THREE.PerspectiveCamera(38, VW / VH, .1, 50);
-  rockyCam.position.set(0, 0.6, 6);
-  rockyCam.lookAt(0, -0.1, 0); // olha levemente pra baixo (vê o Rocky de cima)
+  try { rockyGl = new THREE.WebGLRenderer({ canvas:cv, alpha:true, antialias:true }); }
+  catch(e) { cv.style.display='none'; return; }
+  rockyGl.setPixelRatio(Math.min(DPR,2));
+  rockyGl.setSize(VW,VH);
 
-  rockyCena.add(new THREE.AmbientLight(0x3d1f55, 1.2));
-  var rosa = new THREE.PointLight(0xff2d78, 2.0, 40); rosa.position.set(-2.5, 2, 3); rockyCena.add(rosa);
-  var fria = new THREE.DirectionalLight(0xc0d8ff, 1.0); fria.position.set(2, 3, 2); rockyCena.add(fria);
-  var baixo = new THREE.PointLight(0xff6ba0, 0.6, 15); baixo.position.set(0, -2, 1); rockyCena.add(baixo);
+  rockyCena = new THREE.Scene();
+  // Vista de 3/4 levemente de cima — exatamente como nas fotos de referência
+  rockyCam = new THREE.PerspectiveCamera(34, VW/VH, .05, 60);
+  rockyCam.position.set(1.2, 2.2, 5.8);
+  rockyCam.lookAt(0, 0.1, 0);
+
+  rockyCena.add(new THREE.AmbientLight(0x1a0d2e, 2.2));
+  // Luz rosa Astrophage lateral esquerda (como no site)
+  var lR = new THREE.PointLight(0xff2d78, 4.0, 35); lR.position.set(-3,1.5,2); rockyCena.add(lR);
+  // Luz fria de cima direita (destaca o topo do domo)
+  var lF = new THREE.DirectionalLight(0xc8e0ff, 1.4); lF.position.set(2,5,3); rockyCena.add(lF);
+  // Luz quente de baixo (preenche as patas)
+  var lB = new THREE.PointLight(0xff9960, 0.7, 14); lB.position.set(0,-2.5,1); rockyCena.add(lB);
 
   var tex = texturaPedra();
-  var matPedra = new THREE.MeshStandardMaterial({ map: tex, roughness: .90, metalness: .04, color: 0xc4a06e });
-  var matPinta = new THREE.MeshStandardMaterial({ color: 0x082018, emissive: 0x2dff99, emissiveIntensity: 2.2, roughness: .4 });
+  var MAT = new THREE.MeshStandardMaterial({ map:tex, bumpMap:tex, bumpScale:.05, roughness:.86, metalness:.06, color:0xc4924e });
+  var MAT_J = new THREE.MeshStandardMaterial({ map:tex, roughness:.9, metalness:.04, color:0xa87840 }); // articulações mais escuras
+  var MAT_P = new THREE.MeshStandardMaterial({ color:0x04160a, emissive:0x00ff80, emissiveIntensity:3.0, roughness:.3 });
 
   rocky = new THREE.Group();
-  rocky.scale.set(.001, .001, .001);
+  rocky.scale.set(.001,.001,.001);
   rockyCena.add(rocky);
 
-  // STL coordinate system: X=lateral, Y=depth(front-back), Z=up
-  // Torso centrado em origem. Patas foram exportadas SEPARADAS (para impressora 3D)
-  // e precisam ser reposicionadas manualmente ao redor do torso.
-  //
-  // Torso extents: x[-0.50,0.52] y[-0.47,0.51] z[-0.62,0.43]
-  // A base do torso fica em z≈-0.62 -> patas partem daí.
-  // 5 patas em anel: ângulos distribuídos, raio ~0.38 do centro
+  // ── CORPO PRINCIPAL ──────────────────────────────────────
+  // Rocky tem um domo alto e oval, levemente achatado frente-atrás,
+  // com uma "saia" na base que esconde onde as patas se juntam.
 
-  // Patas: centro X do STL original (antes do offset relativo ao torso):
-  // leg0 center=(0.87,-1.12) leg1=(-0.29,-1.07) leg2=(-0.28,-1.09) leg3=(-0.35,-1.05) leg4=(0.05,-1.06)
-  // Em coord relativa ao torso_center(32.5,27.9,25.4)*SC, as patas ficam ~Y=-1.1 abaixo.
-  // Vamos IGNORAR posição original e reposicionar geometricamente.
+  // Domo principal (metade superior de um ovóide)
+  var domoGeo = new THREE.SphereGeometry(1, 44, 32, 0, Math.PI*2, 0, Math.PI*0.65);
+  var pos = domoGeo.attributes.position;
+  for (var vi=0; vi<pos.count; vi++) {
+    var vx=pos.getX(vi), vy=pos.getY(vi), vz=pos.getZ(vi);
+    pos.setXYZ(vi, vx*1.18, vy*1.0, vz*0.92); // mais largo X, levemente comprimido Z
+  }
+  domoGeo.computeVertexNormals();
+  var domo = new THREE.Mesh(domoGeo, MAT.clone());
+  domo.position.y = 0.22;
+  rocky.add(domo);
+  rockyPartes.carapaca = domo;
 
-  var LEG_RADIUS   = 0.32; // distância do centro às patas
-  var LEG_Z_ATTACH = -0.52; // onde as patas tocam o fundo do torso
-  var LEG_Z_OFFSET = -0.22; // alinha topo da pata ao ponto de junção
-  var LEG_SCALE    = 0.55;  // patas menores que o torso (escala relativa)
+  // Saia da base (torus achatado que esconde as juntas das patas)
+  var saiaGeo = new THREE.TorusGeometry(0.85, 0.22, 10, 36);
+  var saiaPos = saiaGeo.attributes.position;
+  for (var si=0; si<saiaPos.count; si++) {
+    saiaPos.setY(si, saiaPos.getY(si)*0.4); // achata
+    saiaPos.setX(si, saiaPos.getX(si)*1.1); // alarga
+  }
+  saiaGeo.computeVertexNormals();
+  var saia = new THREE.Mesh(saiaGeo, MAT.clone());
+  saia.position.y = -0.18;
+  rocky.add(saia);
 
-  // Ângulo inicial: pata 0 aponta pra frente (Y negativo = câmera)
-  var angBase = -Math.PI / 2;
-
-  rockyPendentes = 6;
-
-  // --- TORSO ---
-  carregarJSON('assets/rocky/torso.json', function(err, data) {
-    if (!err) {
-      var geo = buildGeoFromJSON(data);
-      var mesh = new THREE.Mesh(geo, matPedra.clone());
-      // Torso já centrado; levanta um pouco pra patas ficarem embaixo
-      mesh.position.set(0, 0.05, 0);
-      rocky.add(mesh);
-      rockyPartes.torso = mesh;
-
-      // Pintinhas verdes na superfície do torso (em coordenadas do STL: z=up)
-      var pintPos = [
-        [ 0.15,  0.30,  0.38], [-0.30,  0.10,  0.35],
-        [ 0.40, -0.05,  0.28], [-0.08, -0.35,  0.30],
-        [ 0.28, -0.28,  0.18], [-0.42,  0.28,  0.15],
-        [ 0.02,  0.42,  0.22], [-0.18, -0.02,  0.40],
-        [ 0.38,  0.38,  0.10]
-      ];
-      pintPos.forEach(function(p) {
-        var pin = new THREE.Mesh(new THREE.SphereGeometry(0.032, 7, 5), matPinta.clone());
-        pin.position.set(p[0], p[1], p[2] + 0.05);
-        rocky.add(pin);
-        rockyPartes.pintas.push(pin);
-      });
-    }
-    rockyPendentes--;
-    if (rockyPendentes === 0) rockyVivo = true;
+  // ── PINTINHAS VERDES ──────────────────────────────────────
+  // Espalhadas pelo domo — luminosas como vagalumes
+  var PP = [
+    [0,1,0], [.7,.7,0], [-.65,.72,0], [.45,.85,.35], [-.42,.82,-.38],
+    [.9,.35,.2], [-.88,.38,-.15], [.3,.6,.8], [-.28,.58,-.82], [.5,.5,-.6]
+  ];
+  PP.forEach(function(p) {
+    var len=Math.sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+    var nx=p[0]/len, ny=p[1]/len, nz=p[2]/len;
+    var pin=new THREE.Mesh(new THREE.SphereGeometry(.052,8,6), MAT_P.clone());
+    pin.position.set(nx*1.20, ny*1.02+0.22, nz*0.94);
+    rocky.add(pin);
+    rockyPartes.pintas.push(pin);
   });
 
-  // --- PATAS ---
-  // Cada pata do STL tem a geometria centrada na sua posição original (longe do torso).
-  // Criamos um Group (pivô), o reposicionamos no ponto de saída do torso,
-  // e dentro dele colocamos o Mesh deslocado pra que o TOPO da pata fique no pivô.
-  for (var li = 0; li < 5; li++) {
-    (function(idx) {
-      var ang = angBase + idx * (Math.PI * 2 / 5);
-      var px  = Math.cos(ang) * LEG_RADIUS;
-      var py  = Math.sin(ang) * LEG_RADIUS;
+  // ── 5 PATAS ───────────────────────────────────────────────
+  // Cada pata: ombro grosso saindo pra fora e levemente pra cima →
+  //            joelho dobrando pra baixo →
+  //            canela descendo reta →
+  //            pé arredondado tocando o chão.
+  // Referência pelúcia: patas bem grossas na raiz, afinando na ponta.
 
-      carregarJSON('assets/rocky/leg' + idx + '.json', function(err, data) {
-        if (!err) {
-          // Centro da geometria da pata no espaço do JSON
-          var vArr = data.v;
-          var cx = 0, cy = 0, cz = 0, nv = vArr.length / 3;
-          for (var vi = 0; vi < vArr.length; vi += 3) { cx += vArr[vi]; cy += vArr[vi+1]; cz += vArr[vi+2]; }
-          cx /= nv; cy /= nv; cz /= nv;
+  for (var pi=0; pi<5; pi++) {
+    var ang = pi/5 * Math.PI*2 + Math.PI/10; // offset de 36° pra nenhuma pata ficar exatamente na frente
+    var ca=Math.cos(ang), sa=Math.sin(ang);
 
-          // Pega o ponto mais alto da pata (Z máximo) para alinhar ao torso
-          var czMax = -Infinity;
-          for (var vi2 = 2; vi2 < vArr.length; vi2 += 3) { if (vArr[vi2] > czMax) czMax = vArr[vi2]; }
+    // Pivô de toda a pata — fica na borda lateral da saia
+    var pGrp = new THREE.Group();
+    pGrp.position.set(ca*0.82, -0.18, sa*0.72);
+    pGrp.rotation.y = -ang; // aponta pra fora
+    rocky.add(pGrp);
 
-          var geo = buildGeoFromJSON(data);
-          var mesh = new THREE.Mesh(geo, matPedra.clone());
+    // ── Ombro (pivô de animação)
+    var oGrp = new THREE.Group();
+    pGrp.add(oGrp);
+    // Ângulo base: abre a pata pra fora (Z) e levanta um pouco
+    oGrp.rotation.z = -1.0;   // abre pra fora
+    oGrp.rotation.x = 0.12;   // leve inclinação frontal dependendo do ângulo
 
-          // Pivô no ponto de junção com o torso
-          var grp = new THREE.Group();
-          grp.position.set(px, py, LEG_Z_ATTACH);
+    // Bola do ombro
+    oGrp.add(new THREE.Mesh(new THREE.SphereGeometry(.175,12,9), MAT_J.clone()));
 
-          // Desloca a geometria: subtrai centro XY da pata e alinha topo ao pivô
-          mesh.position.set(-cx, -cy, -czMax + LEG_Z_OFFSET);
+    // Braço superior (coxa) — grosso, longo
+    var coxaGeo = new THREE.CylinderGeometry(.155,.118,.90,12);
+    coxaGeo.translate(0,-.45,0);
+    oGrp.add(new THREE.Mesh(coxaGeo, MAT.clone()));
 
-          // Aponta pata pra fora do centro (roda o grupo no eixo Z do STL)
-          grp.rotation.z = ang + Math.PI / 2;
+    // ── Joelho
+    var jGrp = new THREE.Group();
+    jGrp.position.set(0,-.90,0);
+    oGrp.add(jGrp);
+    jGrp.rotation.z = 0.78; // dobra pra baixo
 
-          // Pinta na pata
-          var pin2 = new THREE.Mesh(new THREE.SphereGeometry(0.025, 6, 5), matPinta.clone());
-          pin2.position.set(0, 0, -0.25);
-          grp.add(pin2);
-          rockyPartes.pintas.push(pin2);
+    jGrp.add(new THREE.Mesh(new THREE.SphereGeometry(.135,11,8), MAT_J.clone()));
 
-          mesh.scale.set(LEG_SCALE, LEG_SCALE, LEG_SCALE);
-          grp.add(mesh);
-          rocky.add(grp);
-          rockyPartes.ombros.push(grp);
-          rockyPartes.patas.push(grp);
-        }
-        rockyPendentes--;
-        if (rockyPendentes === 0) rockyVivo = true;
-      });
-    })(li);
+    // Canela — mais fina, aponta pro chão
+    var canelaGeo = new THREE.CylinderGeometry(.105,.072,.82,12);
+    canelaGeo.translate(0,-.41,0);
+    jGrp.add(new THREE.Mesh(canelaGeo, MAT.clone()));
+
+    // Pé arredondado
+    var pe = new THREE.Mesh(new THREE.SphereGeometry(.098,10,8), MAT_J.clone());
+    pe.scale.set(1.1,.62,1.2);
+    pe.position.set(0,-.82,0);
+    jGrp.add(pe);
+
+    // Pinta na coxa
+    var pp = new THREE.Mesh(new THREE.SphereGeometry(.042,7,6), MAT_P.clone());
+    pp.position.set(.14,-.38,.06);
+    oGrp.add(pp);
+    rockyPartes.pintas.push(pp);
+
+    rockyPartes.ombros.push(oGrp);
+    rockyPartes.cotos.push(jGrp);
+    rockyPartes.patas.push(pGrp);
   }
+
+  rockyVivo = true;
 }
 
 function anchorParaMundo(ax, ay, z) {
@@ -407,15 +396,14 @@ function rockyIr(ax, ay, s, dur) {
 }
 
 function rockyAcena() {
-  if (!rockyVivo || !rockyPartes.patas.length) return;
-  // Levanta a primeira pata (leg0 = pata frontal) pro "olá"
-  var o = rockyPartes.patas[0];
+  if (!rockyVivo || !rockyPartes.ombros.length) return;
+  var o = rockyPartes.ombros[0];
   gsap.timeline()
-    .to(o.rotation, { x: -0.9, duration: .4, ease: 'power2.out' })
-    .to(o.rotation, { x: -0.5, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { x: -0.9, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { x: -0.5, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { x: 0,    duration: .5, ease: 'power2.inOut' });
+    .to(o.rotation, { z: -2.0, duration: .4, ease: 'power2.out' })
+    .to(o.rotation, { z: -1.5, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -2.0, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -1.5, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -1.0, duration: .5, ease: 'power2.inOut' });
 }
 function rockyPula() {
   if (!rockyVivo) return;
@@ -435,8 +423,7 @@ function rockyCurioso() {
 }
 function rockyBump(aoTerminar) {
   if (!rockyVivo) { if (aoTerminar) aoTerminar(); return; }
-  // Fist bump: avança, inclina, estende pata frontal, recua
-  var o = rockyPartes.patas.length ? rockyPartes.patas[0] : null;
+  var o = rockyPartes.ombros.length ? rockyPartes.ombros[0] : null;
   var tl = gsap.timeline({
     onComplete: function () {
       rockyIr(.8, .78, .55, 1.2);
@@ -445,10 +432,10 @@ function rockyBump(aoTerminar) {
   });
   tl.to(rockyAlvo, { x: .5, y: .52, s: 1.5, duration: .8, ease: 'power2.inOut' }, 0);
   if (o) {
-    tl.to(o.rotation, { x: -1.2, duration: .4, ease: 'power3.out' }, .55)
+    tl.to(o.rotation, { z: -2.2, duration: .4, ease: 'power3.out' }, .55)
       .to(rockyAlvo, { s: 2.0, duration: .28, ease: 'power3.in' }, .7)
       .to(rockyAlvo, { s: 1.1, duration: .7, ease: 'elastic.out(1,.6)' }, 1.05)
-      .to(o.rotation, { x: 0,   duration: .6, ease: 'power2.inOut' }, 1.1);
+      .to(o.rotation, { z: -1.0, duration: .6, ease: 'power2.inOut' }, 1.1);
   }
   tl.to(rockyAlvo, { s: 1.1, duration: .7, ease: 'elastic.out(1,.6)' }, 1.05);
 }
@@ -515,15 +502,20 @@ function loop(agora) {
     // Y/Z escalam junto mas mantemos a rotação x=-PI/2, então scale Y/Z são world Z/Y
     rocky.scale.y += (s - rocky.scale.y) * .18;
     rocky.scale.z += (s - rocky.scale.z) * .18;
-    // Respiração: escala Y do torso (bob suave)
-    if (rockyPartes.torso) {
-      rockyPartes.torso.scale.y = 1 + Math.sin(t * 1.3) * 0.025;
+    // Respiração: domo sobe e desce levemente
+    if (rockyPartes.carapaca) {
+      var br = 1 + Math.sin(t * 1.2) * 0.022;
+      rockyPartes.carapaca.scale.set(br, br*0.97, br);
     }
-    rocky.rotation.y = Math.sin(t * 0.5) * 0.13; // balança levemente
-    // Patas: ondulação idle
-    for (var i = 0; i < rockyPartes.patas.length; i++) {
-      var offset = i * (Math.PI * 2 / 5);
-      rockyPartes.patas[i].rotation.x = Math.sin(t * 1.2 + offset) * 0.07;
+    // Balanço suave de lado a lado
+    rocky.rotation.y = Math.sin(t * 0.42) * 0.14;
+    // Ondulação idle das patas — onda sequencial
+    for (var i = 0; i < rockyPartes.ombros.length; i++) {
+      var off = i * (Math.PI * 2 / 5);
+      rockyPartes.ombros[i].rotation.z = -1.0 + Math.sin(t * 1.05 + off) * 0.07;
+      if (rockyPartes.cotos[i]) {
+        rockyPartes.cotos[i].rotation.z = 0.78 + Math.sin(t * 1.05 + off + 0.5) * 0.05;
+      }
     }
     // Pintinhas pulsando
     for (var pi = 0; pi < rockyPartes.pintas.length; pi++) {
