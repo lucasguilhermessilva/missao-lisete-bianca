@@ -14,27 +14,61 @@ function clamp(v,a,b){return v<a?a:(v>b?b:v);}
 function rand(a,b){return a+Math.random()*(b-a);}
 
 /* ============================================================
-   1 · CÉU — estrelas + linha de Petrova em canvas
+   1 · CÉU — espaço vivo: nebulosa que respira, estrelas em
+   profundidade, poeira cósmica, cometas e a linha de Petrova
    ============================================================ */
 var cv = document.getElementById('ceu');
 var cx = cv.getContext('2d');
-var estrelas = [];
+var estrelas = [], poeira = [], nuvens = [], cometas = [];
 var bloom = 0;           // 0..1 intensidade da linha rosa (momento rosa)
 var scrollY = 0;
 
 function montarCeu(){
   cv.width = VW*DPR; cv.height = VH*DPR;
   cx.setTransform(DPR,0,0,DPR,0,0);
+
+  // estrelas em 3 camadas de profundidade
   estrelas = [];
-  var n = Math.min(200, Math.round(VW*VH/9000));
+  var n = Math.min(260, Math.round(VW*VH/7000));
   for (var i=0;i<n;i++){
     var c = i%3;
     estrelas.push({
       x:Math.random()*VW, y:Math.random()*VH*2,
-      r: c===2?rand(.9,1.7):c===1?rand(.6,1.1):rand(.3,.7),
-      par: c===2?.16:c===1?.08:.03,
-      tw:Math.random()*6.28, tv:rand(.4,1.3),
-      rosa:Math.random()<.13
+      r: c===2?rand(1.0,1.9):c===1?rand(.6,1.1):rand(.3,.7),
+      par: c===2?.22:c===1?.10:.04,
+      tw:Math.random()*6.28, tv:rand(.4,1.4),
+      rosa:Math.random()<.14
+    });
+  }
+
+  // poeira cósmica — partículas lentas que dão sensação de movimento
+  poeira = [];
+  for (var d=0; d<48; d++){
+    poeira.push({
+      x:Math.random()*VW, y:Math.random()*VH,
+      vx:rand(-.08,.08), vy:rand(.05,.22),
+      r:rand(.4,1.3), a:rand(.04,.16), rosa:Math.random()<.5
+    });
+  }
+
+  // nuvens de nebulosa que respiram e flutuam
+  nuvens = [
+    {x:.76,y:.16, r:.55, cor:'255,45,120',  base:.10, fx:.018, fy:.012, fr:.10, ph:0},
+    {x:.16,y:.82, r:.62, cor:'120,60,200',  base:.12, fx:.014, fy:.016, fr:.12, ph:2.1},
+    {x:.50,y:.50, r:.45, cor:'255,126,179', base:.05, fx:.020, fy:.010, fr:.14, ph:4.0},
+    {x:.90,y:.70, r:.40, cor:'52,211,153',  base:.04, fx:.012, fy:.014, fr:.10, ph:1.0}
+  ];
+
+  cometas = [];
+}
+
+function talvezCometa(t){
+  if (cometas.length<2 && Math.random()<.004){
+    var fromLeft = Math.random()<.5;
+    cometas.push({
+      x: fromLeft?-40:VW+40, y:rand(0,VH*.5),
+      vx:(fromLeft?1:-1)*rand(5,9), vy:rand(2,4),
+      life:1, len:rand(60,130)
     });
   }
 }
@@ -42,18 +76,68 @@ function montarCeu(){
 var ptsX=[];
 function desenharCeu(t){
   cx.clearRect(0,0,VW,VH);
-  // estrelas
+
+  // ── nebulosa viva (camada de fundo) ──
+  cx.globalCompositeOperation='lighter';
+  for (var ni=0; ni<nuvens.length; ni++){
+    var nb=nuvens[ni];
+    var cxp=(nb.x + Math.sin(t*nb.fx*6+nb.ph)*nb.fx*2)*VW;
+    var cyp=(nb.y + Math.cos(t*nb.fy*6+nb.ph)*nb.fy*2)*VH - scrollY*.02;
+    cyp=((cyp%(VH*1.4))+VH*1.4)%(VH*1.4);
+    var rr=(nb.r + Math.sin(t*nb.fr+nb.ph)*.06)*VW;
+    var a=nb.base*(.8+.2*Math.sin(t*.4+nb.ph));
+    var g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,rr);
+    g.addColorStop(0,'rgba('+nb.cor+','+a+')');
+    g.addColorStop(1,'rgba('+nb.cor+',0)');
+    cx.fillStyle=g; cx.fillRect(0,0,VW,VH);
+  }
+  cx.globalCompositeOperation='source-over';
+
+  // ── poeira cósmica ──
+  for (var di=0; di<poeira.length; di++){
+    var pz=poeira[di];
+    pz.x+=pz.vx; pz.y+=pz.vy + scrollY*0+0;
+    if(pz.y>VH+5){pz.y=-5;pz.x=Math.random()*VW;}
+    if(pz.x>VW+5)pz.x=-5; if(pz.x<-5)pz.x=VW+5;
+    cx.globalAlpha=pz.a*(.6+.4*Math.sin(t*.7+di));
+    cx.fillStyle=pz.rosa?'#ffb6d9':'#cdb8ff';
+    cx.beginPath();cx.arc(pz.x,pz.y,pz.r,0,6.2832);cx.fill();
+  }
+  cx.globalAlpha=1;
+
+  // ── estrelas com parallax + cintilação ──
   for (var i=0;i<estrelas.length;i++){
     var e=estrelas[i];
     var yy=((e.y - scrollY*e.par)%VH+VH)%VH;
-    var a=.35+.65*(.5+.5*Math.sin(e.tw+t*e.tv));
+    var a=.30+.70*(.5+.5*Math.sin(e.tw+t*e.tv));
     cx.globalAlpha=a;
     cx.fillStyle=e.rosa?'#ffb6d9':'#ece6fb';
     cx.beginPath();cx.arc(e.x,yy,e.r,0,6.2832);cx.fill();
-    if(e.rosa&&e.r>1){cx.globalAlpha=a*.35;cx.beginPath();cx.arc(e.x,yy,e.r*3,0,6.2832);cx.fill();}
+    if(e.r>1.1){ // brilho/halo nas estrelas grandes
+      cx.globalAlpha=a*.30;
+      cx.beginPath();cx.arc(e.x,yy,e.r*3.2,0,6.2832);cx.fill();
+    }
   }
   cx.globalAlpha=1;
-  // linha de Petrova
+
+  // ── cometas ocasionais ──
+  talvezCometa(t);
+  for (var ci=cometas.length-1; ci>=0; ci--){
+    var cm=cometas[ci];
+    cm.x+=cm.vx; cm.y+=cm.vy; cm.life-=.012;
+    if(cm.life<=0 || cm.x<-60 || cm.x>VW+60){cometas.splice(ci,1);continue;}
+    var tx=cm.x-cm.vx/Math.hypot(cm.vx,cm.vy)*cm.len;
+    var ty=cm.y-cm.vy/Math.hypot(cm.vx,cm.vy)*cm.len;
+    var grad=cx.createLinearGradient(cm.x,cm.y,tx,ty);
+    grad.addColorStop(0,'rgba(255,214,232,'+(cm.life*.9)+')');
+    grad.addColorStop(1,'rgba(255,45,120,0)');
+    cx.strokeStyle=grad;cx.lineWidth=2;cx.lineCap='round';
+    cx.beginPath();cx.moveTo(cm.x,cm.y);cx.lineTo(tx,ty);cx.stroke();
+    cx.globalAlpha=cm.life;cx.fillStyle='#fff';
+    cx.beginPath();cx.arc(cm.x,cm.y,1.8,0,6.2832);cx.fill();cx.globalAlpha=1;
+  }
+
+  // ── linha de Petrova ──
   var baseA=.14+bloom*.8, amp=VW*(.12+bloom*.1), midx=VW*.5;
   cx.globalCompositeOperation='lighter';
   ptsX.length=0;
@@ -71,7 +155,7 @@ function desenharCeu(t){
     cx.stroke();
   }
   // partículas de Astrophage na linha
-  for (var q=0;q<12;q++){
+  for (var q=0;q<14;q++){
     var ph=(t*(.05+(q%5)*.012)+q*.071)%1, py=ph*(VH+40)-20;
     var idx=clamp(Math.round(py/16)*2,0,ptsX.length-2);
     var px=ptsX[idx]+Math.sin(q*9+t)*(10+24*(q%3)/2);
@@ -114,9 +198,33 @@ function rockyFala(txt,dur){
   },dur||4400);
 }
 function posicionarFala(){
-  var bx=rockyAtual.x*VW, by=rockyAtual.y*VH - 110*Math.max(rockyAtual.s,.5) - 30;
-  falaEl.style.left=clamp(bx-30,12,VW-Math.min(260,VW*.72)-12)+'px';
-  falaEl.style.top=clamp(by,14,VH-150)+'px';
+  var rW = rockyEl.offsetWidth * Math.max(rockyAtual.s,.4);
+  var rH = rockyEl.offsetHeight * Math.max(rockyAtual.s,.4);
+  var rcx = rockyAtual.x*VW;
+  var rcy = rockyAtual.y*VH;
+  var bw = falaEl.offsetWidth || 240;
+  var bh = falaEl.offsetHeight || 80;
+
+  // tenta ABAIXO do Rocky (ele costuma estar no topo)
+  var by = rcy + rH/2 + 14;
+  var bx = rcx - bw/2;
+  falaEl.classList.remove('seta-cima','seta-baixo');
+
+  if (by + bh < VH - 12){
+    falaEl.classList.add('seta-cima'); // seta aponta pra cima (Rocky acima)
+  } else {
+    // não cabe abaixo → coloca ACIMA
+    by = rcy - rH/2 - bh - 14;
+    falaEl.classList.add('seta-baixo');
+    if (by < 12){
+      // nem acima cabe → vai pro lado
+      by = rcy - bh/2;
+      bx = (rcx > VW/2) ? (rcx - rW/2 - bw - 14) : (rcx + rW/2 + 14);
+      falaEl.classList.remove('seta-cima','seta-baixo');
+    }
+  }
+  falaEl.style.left = clamp(bx, 12, VW - bw - 12) + 'px';
+  falaEl.style.top  = clamp(by, 12, VH - bh - 12) + 'px';
 }
 
 /* ============================================================
@@ -215,15 +323,29 @@ function montarScroll(){
 
   if(!REDUZIDO){
     document.querySelectorAll('.reveal').forEach(function(el){
-      gsap.fromTo(el,{opacity:0,y:36},{opacity:1,y:0,duration:1,ease:'power3.out',
-        scrollTrigger:{trigger:el,start:'top 86%',once:true}});
+      gsap.fromTo(el,{opacity:0,y:40,filter:'blur(8px)'},
+        {opacity:1,y:0,filter:'blur(0px)',duration:1.1,ease:'power3.out',
+        scrollTrigger:{trigger:el,start:'top 87%',once:true}});
     });
     document.querySelectorAll('.reveal-foto').forEach(function(el){
-      gsap.fromTo(el,{opacity:0,y:70,scale:.92},{opacity:1,y:0,scale:1,duration:1.4,ease:'power3.out',
-        scrollTrigger:{trigger:el,start:'top 84%',once:true}});
+      gsap.fromTo(el,{opacity:0,y:80,scale:.9,rotate:-2,filter:'blur(10px)'},
+        {opacity:1,y:0,scale:1,rotate:0,filter:'blur(0px)',duration:1.5,ease:'power3.out',
+        scrollTrigger:{trigger:el,start:'top 85%',once:true}});
+      // parallax suave da imagem dentro da moldura enquanto scrolla
+      var img=el.querySelector('img');
+      if(img){
+        gsap.fromTo(img,{yPercent:-6},{yPercent:6,ease:'none',
+          scrollTrigger:{trigger:el,start:'top bottom',end:'bottom top',scrub:true}});
+      }
+    });
+    // títulos: leve subida com brilho
+    document.querySelectorAll('.titulo').forEach(function(el){
+      gsap.fromTo(el,{opacity:0,y:50,filter:'blur(12px)'},
+        {opacity:1,y:0,filter:'blur(0px)',duration:1.3,ease:'power3.out',
+        scrollTrigger:{trigger:el,start:'top 88%',once:true}});
     });
   } else {
-    gsap.set('.reveal,.reveal-foto',{opacity:1});
+    gsap.set('.reveal,.reveal-foto,.titulo',{opacity:1});
   }
 
   // progresso
@@ -258,15 +380,15 @@ function montarScroll(){
 
   // âncoras do Rocky pelas seções
   var paradas=[
-    {sel:'#abertura',x:.82,y:.82,s:.7,fala:'Pergunta: o Lucas te ama infinito? Resposta: agora você sabe. ♫'},
-    {sel:'#cap1',x:.85,y:.85,s:.6,fala:'Humana colorindo. Concentração máxima. Amaze! ♪'},
+    {sel:'#abertura',x:.84,y:.30,s:.62,fala:'Análise da estrela Lisete: brilho máximo. Risadinha: arma perigosa. ♫'},
+    {sel:'#cap1',x:.86,y:.32,s:.58,fala:'Registro: tudo começou com um “Oii”. Eficiência humana: questionável. Resultado: amor. ♪'},
     {sel:'#cap2',x:0,y:0,s:0},
-    {sel:'#cap3',x:.17,y:.85,s:.6,fala:'Caneta sai com água. Do coração, nunca. ♫'},
+    {sel:'#cap3',x:.16,y:.32,s:.58,fala:'“Eu quero namorar meu fi.” Melhor mensagem da galáxia. Confirmado. ♫'},
     {sel:'#cap4',x:0,y:0,s:0},
-    {sel:'#constelacao',x:.85,y:.88,s:.6,fala:'Tantas estrelas! Espera… são todas vocês dois! ♫'},
-    {sel:'#relatorio',x:.16,y:.88,s:.6,fala:'Telemetria verificada: amor passou do limite do sensor. ♪'},
+    {sel:'#constelacao',x:.84,y:.30,s:.58,fala:'Tantas estrelas! Espera… são todas vocês dois! ♫'},
+    {sel:'#relatorio',x:.16,y:.30,s:.58,fala:'67 mil mensagens analisadas. Conclusão: passou do limite do sensor de amor. ♪'},
     {sel:'#video',x:0,y:0,s:0},
-    {sel:'#final',x:.82,y:.78,s:.78,fala:'Hora do soquinho! Aperta o botão! ♫'}
+    {sel:'#final',x:.83,y:.30,s:.72,fala:'Hora do soquinho! Aperta o botão, humana! ✊ ♫'}
   ];
   paradas.forEach(function(cfg){
     ScrollTrigger.create({trigger:cfg.sel,start:'top 55%',end:'bottom 45%',
