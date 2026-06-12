@@ -252,10 +252,9 @@ function montarRocky() {
   rockyGl.setSize(VW,VH);
 
   rockyCena = new THREE.Scene();
-  // Vista de 3/4 levemente de cima — exatamente como nas fotos de referência
-  rockyCam = new THREE.PerspectiveCamera(34, VW/VH, .05, 60);
-  rockyCam.position.set(1.2, 2.2, 5.8);
-  rockyCam.lookAt(0, 0.1, 0);
+  rockyCam = new THREE.PerspectiveCamera(36, VW/VH, .05, 60);
+  rockyCam.position.set(0.7, 1.5, 5.4);
+  rockyCam.lookAt(0, -0.35, 0);
 
   rockyCena.add(new THREE.AmbientLight(0x1a0d2e, 2.2));
   // Luz rosa Astrophage lateral esquerda (como no site)
@@ -338,35 +337,33 @@ function montarRocky() {
     // ── Ombro (pivô de animação)
     var oGrp = new THREE.Group();
     pGrp.add(oGrp);
-    // Ângulo base: abre a pata pra fora (Z) e levanta um pouco
-    oGrp.rotation.z = -1.0;   // abre pra fora
-    oGrp.rotation.x = 0.12;   // leve inclinação frontal dependendo do ângulo
+    oGrp.rotation.z = -0.38;  // abre levemente pra fora (era -1.0 = 57°, agora 22°)
 
     // Bola do ombro
     oGrp.add(new THREE.Mesh(new THREE.SphereGeometry(.175,12,9), MAT_J.clone()));
 
-    // Braço superior (coxa) — grosso, longo
-    var coxaGeo = new THREE.CylinderGeometry(.155,.118,.90,12);
-    coxaGeo.translate(0,-.45,0);
+    // Coxa — grossa e curta como na pelúcia
+    var coxaGeo = new THREE.CylinderGeometry(.162,.130,.78,12);
+    coxaGeo.translate(0,-.39,0);
     oGrp.add(new THREE.Mesh(coxaGeo, MAT.clone()));
 
-    // ── Joelho
+    // ── Joelho — reposicionado para o fim da coxa
     var jGrp = new THREE.Group();
-    jGrp.position.set(0,-.90,0);
+    jGrp.position.set(0,-.78,0);
     oGrp.add(jGrp);
-    jGrp.rotation.z = 0.78; // dobra pra baixo
+    jGrp.rotation.z = 0.35;
 
-    jGrp.add(new THREE.Mesh(new THREE.SphereGeometry(.135,11,8), MAT_J.clone()));
+    jGrp.add(new THREE.Mesh(new THREE.SphereGeometry(.132,11,8), MAT_J.clone()));
 
-    // Canela — mais fina, aponta pro chão
-    var canelaGeo = new THREE.CylinderGeometry(.105,.072,.82,12);
-    canelaGeo.translate(0,-.41,0);
+    // Canela — curta e grossa
+    var canelaGeo = new THREE.CylinderGeometry(.110,.082,.68,12);
+    canelaGeo.translate(0,-.34,0);
     jGrp.add(new THREE.Mesh(canelaGeo, MAT.clone()));
 
-    // Pé arredondado
-    var pe = new THREE.Mesh(new THREE.SphereGeometry(.098,10,8), MAT_J.clone());
-    pe.scale.set(1.1,.62,1.2);
-    pe.position.set(0,-.82,0);
+    // Pé arredondado — largo e baixo como na pelúcia
+    var pe = new THREE.Mesh(new THREE.SphereGeometry(.108,10,8), MAT_J.clone());
+    pe.scale.set(1.25,.58,1.30);
+    pe.position.set(0,-.68,0);
     jGrp.add(pe);
 
     // Pinta na coxa
@@ -399,11 +396,11 @@ function rockyAcena() {
   if (!rockyVivo || !rockyPartes.ombros.length) return;
   var o = rockyPartes.ombros[0];
   gsap.timeline()
-    .to(o.rotation, { z: -2.0, duration: .4, ease: 'power2.out' })
-    .to(o.rotation, { z: -1.5, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { z: -2.0, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { z: -1.5, duration: .2, ease: 'sine.inOut' })
-    .to(o.rotation, { z: -1.0, duration: .5, ease: 'power2.inOut' });
+    .to(o.rotation, { z: -1.1, duration: .4, ease: 'power2.out' })
+    .to(o.rotation, { z: -0.7, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -1.1, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -0.7, duration: .2, ease: 'sine.inOut' })
+    .to(o.rotation, { z: -0.38, duration: .5, ease: 'power2.inOut' });
 }
 function rockyPula() {
   if (!rockyVivo) return;
@@ -432,10 +429,10 @@ function rockyBump(aoTerminar) {
   });
   tl.to(rockyAlvo, { x: .5, y: .52, s: 1.5, duration: .8, ease: 'power2.inOut' }, 0);
   if (o) {
-    tl.to(o.rotation, { z: -2.2, duration: .4, ease: 'power3.out' }, .55)
+    tl.to(o.rotation, { z: -1.2, duration: .4, ease: 'power3.out' }, .55)
       .to(rockyAlvo, { s: 2.0, duration: .28, ease: 'power3.in' }, .7)
       .to(rockyAlvo, { s: 1.1, duration: .7, ease: 'elastic.out(1,.6)' }, 1.05)
-      .to(o.rotation, { z: -1.0, duration: .6, ease: 'power2.inOut' }, 1.1);
+      .to(o.rotation, { z: -0.38, duration: .6, ease: 'power2.inOut' }, 1.1);
   }
   tl.to(rockyAlvo, { s: 1.1, duration: .7, ease: 'elastic.out(1,.6)' }, 1.05);
 }
@@ -512,9 +509,9 @@ function loop(agora) {
     // Ondulação idle das patas — onda sequencial
     for (var i = 0; i < rockyPartes.ombros.length; i++) {
       var off = i * (Math.PI * 2 / 5);
-      rockyPartes.ombros[i].rotation.z = -1.0 + Math.sin(t * 1.05 + off) * 0.07;
+      rockyPartes.ombros[i].rotation.z = -0.38 + Math.sin(t * 1.05 + off) * 0.06;
       if (rockyPartes.cotos[i]) {
-        rockyPartes.cotos[i].rotation.z = 0.78 + Math.sin(t * 1.05 + off + 0.5) * 0.05;
+        rockyPartes.cotos[i].rotation.z = 0.35 + Math.sin(t * 1.05 + off + 0.5) * 0.04;
       }
     }
     // Pintinhas pulsando
