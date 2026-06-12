@@ -41,10 +41,8 @@ button{font-family:var(--sans);cursor:pointer;touch-action:manipulation;border:n
    ============================================================ */
 #ceu{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 #petrova{
-  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
-  background:
-    radial-gradient(70% 50% at 78% 14%,rgba(255,45,120,.16),transparent 60%),
-    radial-gradient(60% 50% at 16% 86%,rgba(96,38,170,.18),transparent 65%);
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.25;
+  background:radial-gradient(80% 60% at 50% 0%,rgba(96,38,170,.10),transparent 60%);
   transition:opacity 1.2s;
 }
 main{position:relative;z-index:3}
@@ -53,11 +51,14 @@ main{position:relative;z-index:3}
    ROCKY — foto real flutuando
    ============================================================ */
 #rocky{
-  position:fixed;z-index:5;width:clamp(120px,22vw,230px);
-  left:50%;top:78%;
+  position:fixed;z-index:5;width:200px;
+  left:50%;top:78%;opacity:0;
   transform:translate(-50%,-50%) scale(0);
   pointer-events:none;will-change:transform,left,top;
+  transition:opacity .4s;
 }
+@media (max-width:600px){#rocky{width:150px}}
+@media (orientation:landscape) and (max-height:820px){#rocky{width:170px}}
 #rocky-img{width:100%;height:auto;filter:drop-shadow(0 18px 40px rgba(0,0,0,.6))}
 #rocky-glow{
   position:absolute;inset:-30% -20%;z-index:-1;border-radius:50%;
@@ -195,9 +196,11 @@ main{position:relative;z-index:3}
 /* ============================================================
    CAPÍTULOS — foto grande + texto lado a lado
    ============================================================ */
-.cap{flex-direction:row;flex-wrap:wrap;gap:clamp(30px,5vw,70px);justify-content:center;align-items:center;text-align:left;max-width:1200px;margin:0 auto}
+.cap{flex-direction:row;flex-wrap:wrap;gap:clamp(28px,4vw,64px);justify-content:center;align-items:center;text-align:left;max-width:1180px;margin:0 auto;width:100%}
 .cap-inv{flex-direction:row-reverse}
-.cap-texto{flex:1 1 320px;max-width:440px}
+.cap-texto{flex:1 1 340px;min-width:0;max-width:460px}
+.cap-texto .texto{max-width:100%;overflow-wrap:break-word;hyphens:auto}
+.cap-texto .assina{max-width:100%}
 .cap-texto .eyebrow{text-align:left}
 .cap-texto .eyebrow::before,.cap-texto .eyebrow::after{content:''}
 .cap-texto .assina{margin-top:22px}
@@ -348,7 +351,18 @@ main{position:relative;z-index:3}
   .cap,.cap-inv{flex-direction:column;text-align:center}
   .cap-texto{max-width:30rem}
   .cap-texto .eyebrow{text-align:center}
+  .cap-texto .texto{text-align:center}
   .foto{flex-basis:auto;width:min(440px,90vw)}
+}
+/* paisagem em tela baixa (tablet deitado): foto menor, texto respira */
+@media (orientation:landscape) and (max-height:860px){
+  .cena{padding:12vh 5vw}
+  .cap,.cap-inv{gap:clamp(28px,4vw,56px);padding:10vh 6vw}
+  .foto{flex:0 1 300px;width:min(300px,40vw)}
+  .foto img{aspect-ratio:3/4}
+  .cap-texto{flex:1 1 380px;max-width:480px}
+  .cap-texto .texto{font-size:clamp(20px,2.6vw,30px)}
+  .titulo{font-size:clamp(40px,6vw,64px)}
 }
 @media (max-width:480px){
   .grid-stats{grid-template-columns:1fr}

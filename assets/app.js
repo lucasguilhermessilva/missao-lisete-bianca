@@ -51,12 +51,13 @@ function montarCeu(){
     });
   }
 
-  // nuvens de nebulosa que respiram e flutuam
+  // nuvens de nebulosa que respiram, flutuam e derivam pela tela
+  // amp = amplitude do passeio (fração da tela); vel = velocidade
   nuvens = [
-    {x:.76,y:.16, r:.55, cor:'255,45,120',  base:.10, fx:.018, fy:.012, fr:.10, ph:0},
-    {x:.16,y:.82, r:.62, cor:'120,60,200',  base:.12, fx:.014, fy:.016, fr:.12, ph:2.1},
-    {x:.50,y:.50, r:.45, cor:'255,126,179', base:.05, fx:.020, fy:.010, fr:.14, ph:4.0},
-    {x:.90,y:.70, r:.40, cor:'52,211,153',  base:.04, fx:.012, fy:.014, fr:.10, ph:1.0}
+    {x:.76,y:.16, r:.55, cor:'255,45,120',  base:.13, amp:.10, vel:.07, fr:.18, ph:0},
+    {x:.16,y:.82, r:.62, cor:'120,60,200',  base:.15, amp:.12, vel:.05, fr:.20, ph:2.1},
+    {x:.50,y:.45, r:.48, cor:'255,126,179', base:.07, amp:.14, vel:.09, fr:.22, ph:4.0},
+    {x:.90,y:.70, r:.42, cor:'52,211,153',  base:.05, amp:.09, vel:.06, fr:.16, ph:1.0}
   ];
 
   cometas = [];
@@ -77,17 +78,20 @@ var ptsX=[];
 function desenharCeu(t){
   cx.clearRect(0,0,VW,VH);
 
-  // ── nebulosa viva (camada de fundo) ──
+  // ── nebulosa viva (camada de fundo): deriva, respira e pulsa ──
   cx.globalCompositeOperation='lighter';
   for (var ni=0; ni<nuvens.length; ni++){
     var nb=nuvens[ni];
-    var cxp=(nb.x + Math.sin(t*nb.fx*6+nb.ph)*nb.fx*2)*VW;
-    var cyp=(nb.y + Math.cos(t*nb.fy*6+nb.ph)*nb.fy*2)*VH - scrollY*.02;
-    cyp=((cyp%(VH*1.4))+VH*1.4)%(VH*1.4);
-    var rr=(nb.r + Math.sin(t*nb.fr+nb.ph)*.06)*VW;
-    var a=nb.base*(.8+.2*Math.sin(t*.4+nb.ph));
+    // passeio orbital lento pela tela
+    var cxp=(nb.x + Math.sin(t*nb.vel + nb.ph)*nb.amp)*VW;
+    var cyp=(nb.y + Math.cos(t*nb.vel*.8 + nb.ph)*nb.amp*.7)*VH - scrollY*.03;
+    cyp=((cyp%(VH*1.5))+VH*1.5)%(VH*1.5);
+    // respiração do raio
+    var rr=(nb.r + Math.sin(t*nb.fr+nb.ph)*.10)*VW;
+    var a=nb.base*(.7+.3*Math.sin(t*.5+nb.ph));
     var g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,rr);
     g.addColorStop(0,'rgba('+nb.cor+','+a+')');
+    g.addColorStop(.6,'rgba('+nb.cor+','+(a*.35)+')');
     g.addColorStop(1,'rgba('+nb.cor+',0)');
     cx.fillStyle=g; cx.fillRect(0,0,VW,VH);
   }
@@ -198,33 +202,35 @@ function rockyFala(txt,dur){
   },dur||4400);
 }
 function posicionarFala(){
-  var rW = rockyEl.offsetWidth * Math.max(rockyAtual.s,.4);
-  var rH = rockyEl.offsetHeight * Math.max(rockyAtual.s,.4);
-  var rcx = rockyAtual.x*VW;
-  var rcy = rockyAtual.y*VH;
+  // pega a posição REAL do Rocky na tela (já com clamp aplicado no loop)
+  var rb = rockyEl.getBoundingClientRect();
+  var rcx = rb.left + rb.width/2;
+  var rcy = rb.top + rb.height/2;
+  var rW = rb.width || rockyEl.offsetWidth*rockyAtual.s;
+  var rH = rb.height || rockyEl.offsetHeight*rockyAtual.s;
   var bw = falaEl.offsetWidth || 240;
   var bh = falaEl.offsetHeight || 80;
 
-  // tenta ABAIXO do Rocky (ele costuma estar no topo)
-  var by = rcy + rH/2 + 14;
+  // tenta ACIMA do Rocky (mais natural — balão de fala flutua sobre ele)
+  var by = rcy - rH/2 - bh - 16;
   var bx = rcx - bw/2;
   falaEl.classList.remove('seta-cima','seta-baixo');
 
-  if (by + bh < VH - 12){
-    falaEl.classList.add('seta-cima'); // seta aponta pra cima (Rocky acima)
+  if (by >= 12){
+    falaEl.classList.add('seta-baixo'); // seta aponta pra baixo (Rocky abaixo)
   } else {
-    // não cabe abaixo → coloca ACIMA
-    by = rcy - rH/2 - bh - 14;
-    falaEl.classList.add('seta-baixo');
-    if (by < 12){
-      // nem acima cabe → vai pro lado
+    // não cabe acima → tenta ABAIXO
+    by = rcy + rH/2 + 16;
+    falaEl.classList.add('seta-cima');
+    if (by + bh > VH - 12){
+      // nem abaixo → vai pro lado oposto à borda
       by = rcy - bh/2;
       bx = (rcx > VW/2) ? (rcx - rW/2 - bw - 14) : (rcx + rW/2 + 14);
       falaEl.classList.remove('seta-cima','seta-baixo');
     }
   }
-  falaEl.style.left = clamp(bx, 12, VW - bw - 12) + 'px';
-  falaEl.style.top  = clamp(by, 12, VH - bh - 12) + 'px';
+  falaEl.style.left = clamp(bx, 10, VW - bw - 10) + 'px';
+  falaEl.style.top  = clamp(by, 10, VH - bh - 10) + 'px';
 }
 
 /* ============================================================
@@ -234,17 +240,37 @@ var t0=performance.now();
 function loop(agora){
   var t=(agora-t0)/1000;
   scrollY=pageYOffset;
+  // proteção: se o canvas perdeu tamanho (resize/zoom), remonta
+  if (cv.width===0 || Math.abs(cv.width/DPR - VW) > 4) { VW=innerWidth; VH=innerHeight; montarCeu(); }
   desenharCeu(t);
   // suaviza Rocky
   rockyAtual.x+=(rockyAlvo.x-rockyAtual.x)*.08;
   rockyAtual.y+=(rockyAlvo.y-rockyAtual.y)*.08;
   rockyAtual.s+=(rockyAlvo.s-rockyAtual.s)*.10;
-  var flut=Math.sin(t*1.1)*.012;
-  rockyEl.style.left=(rockyAtual.x*100)+'%';
-  rockyEl.style.top=((rockyAtual.y+flut)*100)+'%';
-  rockyEl.style.transform='translate(-50%,-50%) scale('+rockyAtual.s.toFixed(3)+') rotate('+(Math.sin(t*.5)*2)+'deg)';
+  posicionarRocky(t);
   if(!falaEl.hidden) posicionarFala();
   requestAnimationFrame(loop);
+}
+
+/* coloca o Rocky em px reais, garantindo que NUNCA saia da tela */
+function posicionarRocky(t){
+  if (rockyAtual.s < .01){ rockyEl.style.opacity='0'; return; }
+  rockyEl.style.opacity='1';
+  // largura real do elemento (definida no CSS, responsiva)
+  var w = rockyEl.offsetWidth, h = rockyEl.offsetHeight;
+  var esc = rockyAtual.s;                 // 0..1 → fração do tamanho base
+  var flut = Math.sin(t*1.1)*8;           // flutuação em px
+  // centro desejado em px
+  var cxp = rockyAtual.x * VW;
+  var cyp = rockyAtual.y * VH + flut;
+  // metades reais já escaladas
+  var halfW = w*esc/2, halfH = h*esc/2;
+  // clamp pra caber inteiro na tela com margem
+  cxp = clamp(cxp, halfW+8, VW-halfW-8);
+  cyp = clamp(cyp, halfH+8, VH-halfH-8);
+  rockyEl.style.left = cxp+'px';
+  rockyEl.style.top  = cyp+'px';
+  rockyEl.style.transform='translate(-50%,-50%) scale('+esc.toFixed(3)+') rotate('+(Math.sin(t*.5)*2)+'deg)';
 }
 
 /* ============================================================
@@ -378,31 +404,50 @@ function montarScroll(){
     gsap.set(['#rosa-1','#rosa-2','#rosa-3','#rosa-4'],{opacity:1});
   }
 
-  // âncoras do Rocky pelas seções
+  // âncoras do Rocky pelas seções.
+  // lado: 'd' (direita) ou 'e' (esquerda); o x exato é resolvido por
+  // ancoraX() conforme a orientação, pra ele nunca cobrir o conteúdo.
   var paradas=[
-    {sel:'#abertura',x:.84,y:.30,s:.62,fala:'Análise da estrela Lisete: brilho máximo. Risadinha: arma perigosa. ♫'},
-    {sel:'#cap1',x:.86,y:.32,s:.58,fala:'Registro: tudo começou com um “Oii”. Eficiência humana: questionável. Resultado: amor. ♪'},
-    {sel:'#cap2',x:0,y:0,s:0},
-    {sel:'#cap3',x:.16,y:.32,s:.58,fala:'“Eu quero namorar meu fi.” Melhor mensagem da galáxia. Confirmado. ♫'},
-    {sel:'#cap4',x:0,y:0,s:0},
-    {sel:'#constelacao',x:.84,y:.30,s:.58,fala:'Tantas estrelas! Espera… são todas vocês dois! ♫'},
-    {sel:'#relatorio',x:.16,y:.30,s:.58,fala:'67 mil mensagens analisadas. Conclusão: passou do limite do sensor de amor. ♪'},
-    {sel:'#video',x:0,y:0,s:0},
-    {sel:'#final',x:.83,y:.30,s:.72,fala:'Hora do soquinho! Aperta o botão, humana! ✊ ♫'}
+    {sel:'#abertura',  lado:'d', s:.85, fala:'Análise da estrela Lisete: brilho máximo. Risadinha: arma perigosa. ♫'},
+    {sel:'#cap1',      lado:'d', s:.8,  fala:'Registro: tudo começou com um “Oii”. Eficiência humana: questionável. Resultado: amor. ♪'},
+    {sel:'#cap2',      s:0},
+    {sel:'#cap3',      lado:'e', s:.8,  fala:'“Eu quero namorar meu fi.” Melhor mensagem da galáxia. Confirmado. ♫'},
+    {sel:'#cap4',      s:0},
+    {sel:'#constelacao',lado:'d',s:.8,  fala:'Tantas estrelas! Espera… são todas vocês dois! ♫'},
+    {sel:'#relatorio', lado:'e', s:.8,  fala:'67 mil mensagens analisadas. Conclusão: passou do limite do sensor de amor. ♪'},
+    {sel:'#video',     s:0},
+    {sel:'#final',     lado:'d', s:.95, fala:'Hora do soquinho! Aperta o botão, humana! ✊ ♫'}
   ];
   paradas.forEach(function(cfg){
     ScrollTrigger.create({trigger:cfg.sel,start:'top 55%',end:'bottom 45%',
       onToggle:function(self){
         if(!self.isActive||!iniciado) return;
         if(cfg.s>0){
-          rockyIr(cfg.x,cfg.y,cfg.s);
+          var a=ancoraRocky(cfg.lado);
+          rockyIr(a.x,a.y,cfg.s);
           if(cfg.fala&&!cfg.falou){cfg.falou=true;setTimeout(function(){rockyFala(cfg.fala);},900);}
         } else {
-          rockyIr(rockyAlvo.x,1.25,0,.8);
+          rockyIr(rockyAlvo.x,1.3,0,.8); // some por baixo
         }
       }
     });
   });
+}
+
+/* resolve a posição do Rocky (em fração 0..1) conforme orientação.
+   paisagem: ele fica bem na quina; retrato: mais centralizado no topo. */
+function ancoraRocky(lado){
+  var paisagem = VW/VH > 1.15;
+  var x, y;
+  if (paisagem){
+    // paisagem: bem na quina superior, fora da coluna de conteúdo
+    x = (lado==='e') ? .08 : .92;
+    y = .16;
+  } else {
+    x = (lado==='e') ? .19 : .81;
+    y = .18;
+  }
+  return {x:x, y:y};
 }
 
 /* ============================================================
@@ -412,10 +457,11 @@ document.getElementById('bump').addEventListener('click',function(){
   var btn=this;btn.disabled=true;
   rockyFala('Fist my bump! ✊ ♫',3200);
   if(!REDUZIDO){
+    var volta=ancoraRocky('d');
     gsap.timeline({onComplete:function(){btn.disabled=false;}})
-      .to(rockyAlvo,{x:.5,y:.55,s:1.3,duration:.8,ease:'power2.inOut'})
-      .to(rockyAlvo,{s:1.7,duration:.25,ease:'power3.in'})
-      .to(rockyAlvo,{s:.78,x:.82,y:.78,duration:.9,ease:'elastic.out(1,.6)'});
+      .to(rockyAlvo,{x:.5,y:.5,s:1.15,duration:.8,ease:'power2.inOut'})
+      .to(rockyAlvo,{s:1.45,duration:.25,ease:'power3.in'})
+      .to(rockyAlvo,{s:.9,x:volta.x,y:volta.y,duration:.9,ease:'elastic.out(1,.6)'});
     var flash=document.createElement('div');
     flash.style.cssText='position:fixed;inset:0;z-index:50;pointer-events:none;background:radial-gradient(circle at 50% 55%,rgba(255,214,232,.9),rgba(255,45,120,.3) 60%,transparent 80%);opacity:0';
     document.body.appendChild(flash);
@@ -446,7 +492,8 @@ function init(){
       capa.style.display='none';
       document.body.classList.remove('travado');
       ScrollTrigger.refresh();
-      rockyIr(.82,.8,.7,1.4);
+      var a=ancoraRocky('d');
+      rockyIr(a.x,a.y,.85,1.4);
       setTimeout(function(){rockyFala('♫ Bem-vinda a bordo, Lisete Bianca! ♫',5000);},800);
     }});
   });
@@ -455,11 +502,20 @@ function init(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
 else init();
 
-/* resize */
+/* resize / rotação / zoom — recalcula tudo e reancora o Rocky */
 var rt=null;
-addEventListener('resize',function(){
-  clearTimeout(rt);
-  rt=setTimeout(function(){VW=innerWidth;VH=innerHeight;montarCeu();ScrollTrigger.refresh();},250);
-});
+function aoRedimensionar(){
+  VW=innerWidth; VH=innerHeight;
+  montarCeu();
+  // reancora o Rocky no lado que ele já estava (mantém o lado pela posição x atual)
+  if (iniciado && rockyAlvo.s>.01){
+    var lado = rockyAlvo.x < .5 ? 'e' : 'd';
+    var a=ancoraRocky(lado);
+    rockyAlvo.x=a.x; rockyAlvo.y=a.y; // sem animação — salto direto evita "voar"
+  }
+  ScrollTrigger.refresh();
+}
+addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(aoRedimensionar,200);});
+addEventListener('orientationchange',function(){clearTimeout(rt);rt=setTimeout(aoRedimensionar,300);});
 
 })();
